@@ -7,13 +7,25 @@ class NewRoute extends React.Component {
     render() {
         return (
             <form onSubmit={this.props.handleSubmit} onReset={this.props.handleReset}>
+                <div className="form">
                 <label className="input-labels">
                     Route Name: 
                     <input name="name" className="input-fields" type="text" required/>
                 </label>
                 <label id="input-labels">
                     Route Rating: 
-                    <input name="rating" className="input-fields" type="number" step="0.01" min="5.00" max="6.00" required/>
+                    <select name="rating" className="input-fields" required>
+                        <option value=""></option>
+                        <option value="5.6">5.6</option>
+                        <option value="5.7">5.7</option>
+                        <option value="5.8">5.8</option>
+                        <option value="5.9">5.9</option>
+                        <option value="5.10">5.10</option>
+                        <option value="5.11">5.11</option>
+                        <option value="5.12">5.12</option>
+                        <option value="5.13">5.13</option>
+                        <option value="5.14">5.14</option>
+                    </select>
                 </label>
                 <label id="input-labels">
                     Attempts: 
@@ -27,6 +39,7 @@ class NewRoute extends React.Component {
                     Total Points: 
                     <input name="totalPoints" className="input-fields" type="number" min="0" required/>
                 </label>
+                </div>
                 <div className="buttons">
                     <input type="submit" className="greenButtons" value="Save" />
                     <input type="reset" className="redButtons" value="Cancel" />
@@ -52,7 +65,8 @@ class League extends React.Component {
     removeRoute() {
         if(this.state.routes.length > 0) {
             const routes = this.state.routes.slice();
-            const newRoutes = routes.pop();
+            routes.pop();
+            const newRoutes = routes;
             this.setState({routes: newRoutes});
         };
     };
