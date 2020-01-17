@@ -5,7 +5,11 @@ class AddRoute extends React.Component {
     
     render(){
         return(
-            <h1>Hello World</h1>
+            <>
+                <div className="col-2">
+                    <button className="btn btn-secondary">Add Route</button>
+                </div>
+            </>
         )
     }
 }
