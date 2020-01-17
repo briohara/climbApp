@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import GetAllRoutes from "./utilities/help";
 
 class NewRoute extends React.Component {
     render() {
@@ -110,12 +111,16 @@ class League extends React.Component {
         );
 
         //Call DB for routes list
-        fetch("localhost:6900/getRoutes")
-            .then((res) => {
-                console.log(res);
-            })
+        let returnedRoutes = GetAllRoutes();
+        console.log(returnedRoutes.result);
+        // fetch("/getRoutes")
+        //     .then(res => res.json())
+        //     .then((res2) => {
+        //         console.log(JSON.stringify(res2));
+        //         returnedRoutes = res2;
+        //     })
+        //     .catch(err => console.log(err));
 
-        
         const formatedRoutes = this.state.routes.length > 0 ? this.state.routes.map((route) => {
             const { name, rating, attempts, pointsEarned, totalPoints } = route;
             return (

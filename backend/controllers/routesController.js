@@ -7,7 +7,17 @@ exports.climbing_routes_list = function(req, res, next) {
         .exec((err, list_climbingRoutes) => {
             if(err) { return next(err); }
             console.log("Finding Routes...");
-            res.json({list_climbingRoutes});
+            let formatedRoutes = list_climbingRoutes.map((x) => {
+                return {
+                    _id: x._id,
+                    name: x.name,
+                    rating: parseFloat(x.rating),
+                    attempts: x.attempts,
+                    points_earned: x.points_earned,
+                    total_points: x.total_points
+                }
+            });
+            res.json(formatedRoutes);
         })
 };
 
