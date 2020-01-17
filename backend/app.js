@@ -17,6 +17,8 @@ const routesRouter = require("./routes/routesRoute");
 app.use(express.json());
 app.get("/getRoutes", routesRouter);
 app.post("/createRoute", routesRouter);
+app.delete("/removeRoute", routesRouter);
+app.put("/updateRoute", routesRouter);
 
 app.listen(port, () => {
     console.log(`App is listening on ${port}`);
