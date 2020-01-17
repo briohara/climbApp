@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-function GetAllRoutes() {
+function GetAllRoutes() {    
     return axios.get("getRoutes")
         .then((res) => { return res.data })
         .catch((err) => { console.log(err) });
