@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import GetAllRoutes from "./utilities/help";
+import * as api from "./utilities/help";
 
 class NewRoute extends React.Component {
     render() {
@@ -58,6 +58,22 @@ class League extends React.Component {
         };
     };
 
+    componentDidMount() {
+        api.GetAllRoutes()
+            .then((data) => { 
+                const formatedRoutes = data.map((route) => {
+                    return {
+                        name: route.name,
+                        rating: route.rating,
+                        attempts: route.attempts,
+                        points_earned: route.points_earned,
+                        total_points: route.total_points
+                    }
+                });
+               this.setState({routes: formatedRoutes})
+            });
+    }
+
     addRoute() {
         this.setState({isShowing: !this.state.isShowing});
     };
@@ -74,18 +90,29 @@ class League extends React.Component {
     handleSubmit (event) {
         event.preventDefault();
 
-        const routes = this.state.routes.slice();
         const newRoute = {name: event.target.name.value,
         rating: event.target.rating.value,
         attempts: event.target.attempts.value,
-        pointsEarned: event.target.earned.value,
-        totalPoints: event.target.totalPoints.value};
+        points_earned: event.target.earned.value,
+        total_points: event.target.totalPoints.value};
 
         //Call DB to add routes and refresh routes table
-        const newRoutes = routes.concat(newRoute);
-        this.setState({routes: newRoutes});
-        this.setState({isShowing: !this.state.isShowing});
-        
+        api.CreateNewRoute(newRoute);
+
+        api.GetAllRoutes()
+        .then((data) => { 
+            const formatedRoutes = data.map((route) => {
+                return {
+                    name: route.name,
+                    rating: route.rating,
+                    attempts: route.attempts,
+                    points_earned: route.points_earned,
+                    total_points: route.total_points
+                }
+            });
+           this.setState({routes: formatedRoutes});
+           this.setState({isShowing: !this.state.isShowing});
+        }); 
     };
 
     handleReset (event) {
@@ -110,25 +137,14 @@ class League extends React.Component {
             </tr>
         );
 
-        //Call DB for routes list
-        let returnedRoutes = GetAllRoutes();
-        console.log(returnedRoutes.result);
-        // fetch("/getRoutes")
-        //     .then(res => res.json())
-        //     .then((res2) => {
-        //         console.log(JSON.stringify(res2));
-        //         returnedRoutes = res2;
-        //     })
-        //     .catch(err => console.log(err));
-
         const formatedRoutes = this.state.routes.length > 0 ? this.state.routes.map((route) => {
-            const { name, rating, attempts, pointsEarned, totalPoints } = route;
+            const { name, rating, attempts, points_earned, total_points } = route;
             return (
                 <tr key={name}>
                     <td>{name}</td>
                     <td>{rating}</td>
                     <td>{attempts}</td>
-                    <td>{pointsEarned}/{totalPoints}</td>
+                    <td>{points_earned}/{total_points}</td>
                 </tr>
             );
         }) : '';

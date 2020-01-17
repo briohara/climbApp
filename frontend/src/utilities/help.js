@@ -1,15 +1,16 @@
+const axios = require("axios");
 
-async function GetAllRoutes() {
-    console.log("Calling DB....")
-    return await fetch("/getRoutes")
-            .then(res => res.json())
-            .then((res2) => {return res2} )
-            .catch(err => console.log(err));
+function GetAllRoutes() {
+    return axios.get("getRoutes")
+        .then((res) => { return res.data })
+        .catch((err) => { console.log(err) });
 }
 
-async function Wrapper() {
-    const result = await GetAllRoutes();
-    return result;
+function CreateNewRoute(route) {
+    return axios.post("createRoute", { route })
+        .then(res => {
+            console.log(res.data);
+        })
 }
 
-module.exports = GetAllRoutes;
+module.exports = { GetAllRoutes, CreateNewRoute };

@@ -25,13 +25,14 @@ exports.climbing_routes_create = [
     /* *********************** ADD VALIDATION/ SANITIZATION ****************************************** */
 
     (req, res, next) => {
+        //console.log(req);
         let climbingRoute = new ClimbingRoutes(
             {
-                name: req.body.name,
-                rating: req.body.rating,
-                attempts: req.body.attempts,
-                points_earned: req.body.points_earned,
-                total_points: req.body.total_points
+                name: req.body.route.name,
+                rating: req.body.route.rating,
+                attempts: req.body.route.attempts,
+                points_earned: req.body.route.points_earned,
+                total_points: req.body.route.total_points
             }
         );
 
