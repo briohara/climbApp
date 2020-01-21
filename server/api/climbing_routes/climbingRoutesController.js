@@ -49,8 +49,8 @@ exports.climbing_routes_create = [
 exports.climbing_routes_remove = [
 
     (req, res, next) => {
-        //delete route by name
-        ClimbingRoutes.deleteOne( {name: req.body.route.name}, (err) => {
+        //delete route by id
+        ClimbingRoutes.deleteOne( {_id: req.body.route._id}, (err) => {
             if(err) { console.log(`Error while deleting: ${err}`); };
 
             // Successful!!
@@ -75,7 +75,7 @@ exports.climbing_routes_update = [
         );
 
         //update route by name
-        ClimbingRoutes.replaceOne( {name: req.body.route.name}, climbingRoute ,(err) => {
+        ClimbingRoutes.replaceOne( {_id: req.body.route._id}, climbingRoute ,(err) => {
             if(err) { console.log(`Error while updating: ${err}`); };
 
             //Log how many rows were replaced and other verification stuff 
