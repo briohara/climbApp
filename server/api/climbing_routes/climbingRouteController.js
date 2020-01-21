@@ -1,7 +1,7 @@
 const ClimbingRouteModel = require("./climbingRouteModel");
 
 
-exports.climbing_routes_list = function(req, res, next) {
+exports.getAllRoutes = function(req, res, next) {
 
     ClimbingRoutes.find()
         .exec((err, list_climbingRoutes) => {
@@ -21,18 +21,10 @@ exports.climbing_routes_list = function(req, res, next) {
         })
 };
 
-exports.climbing_routes_create = [
+exports.createClimbingRoute = [
     (req, res, next) => {
         //console.log(req);
-        let climbingRoute = new ClimbingRouteModel(
-            {
-                name: req.body.route.name,
-                rating: req.body.route.rating,
-                attempts: req.body.route.attempts,
-                points_earned: req.body.route.points_earned,
-                total_points: req.body.route.total_points
-            }
-        );
+        let climbingRoute = new ClimbingRouteModel(req.body);
 
         //save new route
         climbingRoute.save((err, product) => {
@@ -44,11 +36,11 @@ exports.climbing_routes_create = [
     }
 ];
 
-exports.climbing_routes_remove = [
+exports.deleteClimbingRoute = [
 
     (req, res, next) => {
         //delete route by id
-        ClimbingRouteModel.findByIdAndDelete( req.body.route._id, (err) => {
+        ClimbingRouteModel.findByIdAndDelete( req.body, (err) => {
             if(err) { console.log(`Error while deleting: ${err}`); };
 
             // Successful!!
@@ -58,22 +50,22 @@ exports.climbing_routes_remove = [
     }
 ];
 
-exports.climbing_routes_update = [
+exports.updateClimbingRoute = [
 
     (req, res, next) => {
 
         let climbingRoute = new ClimbingRouteModel(
             {
-                name: req.body.route.name,
-                rating: req.body.route.rating,
-                attempts: req.body.route.attempts,
-                points_earned: req.body.route.points_earned,
-                total_points: req.body.route.total_points
+                name: req.body.name,
+                rating: req.body.rating,
+                attempts: req.body.attempts,
+                points_earned: req.body.points_earned,
+                total_points: req.body.total_points
             }
         );
 
         //update route by id
-        ClimbingRouteModel.findByIdAndUpdate( req.body.route._id, climbingRoute ,(err) => {
+        ClimbingRouteModel.findByIdAndUpdate( req.body._id, climbingRoute ,(err) => {
             if(err) { console.log(`Error while updating: ${err}`); };
 
             //Log how many rows were replaced and other verification stuff 
