@@ -1,4 +1,4 @@
-const ClimbingRoutes = require("./climbingRoutesModel");
+const ClimbingRouteModel = require("./climbingRouteModel");
 
 
 exports.climbing_routes_list = function(req, res, next) {
@@ -22,11 +22,9 @@ exports.climbing_routes_list = function(req, res, next) {
 };
 
 exports.climbing_routes_create = [
-    /* *********************** ADD VALIDATION/ SANITIZATION ****************************************** */
-
     (req, res, next) => {
         //console.log(req);
-        let climbingRoute = new ClimbingRoutes(
+        let climbingRoute = new ClimbingRouteModel(
             {
                 name: req.body.route.name,
                 rating: req.body.route.rating,
@@ -50,7 +48,7 @@ exports.climbing_routes_remove = [
 
     (req, res, next) => {
         //delete route by id
-        ClimbingRoutes.deleteOne( {_id: req.body.route._id}, (err) => {
+        ClimbingRouteModel.findByIdAndDelete( req.body.route._id, (err) => {
             if(err) { console.log(`Error while deleting: ${err}`); };
 
             // Successful!!
@@ -64,7 +62,7 @@ exports.climbing_routes_update = [
 
     (req, res, next) => {
 
-        let climbingRoute = new ClimbingRoutes(
+        let climbingRoute = new ClimbingRouteModel(
             {
                 name: req.body.route.name,
                 rating: req.body.route.rating,
@@ -74,8 +72,8 @@ exports.climbing_routes_update = [
             }
         );
 
-        //update route by name
-        ClimbingRoutes.replaceOne( {_id: req.body.route._id}, climbingRoute ,(err) => {
+        //update route by id
+        ClimbingRouteModel.findByIdAndUpdate( req.body.route._id, climbingRoute ,(err) => {
             if(err) { console.log(`Error while updating: ${err}`); };
 
             //Log how many rows were replaced and other verification stuff 
