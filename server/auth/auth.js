@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const config = require("../config/config");
-const checkToken = expressJwt({ secret: config.secrets.jwt}); //Gives back middleware function
+const checkToken = expressJwt({ secret: config.secret.jwt}); //Gives back middleware function
 const User = require("../api/users/userModel");
 
 //Check incoming request token
