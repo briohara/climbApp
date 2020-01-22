@@ -5,9 +5,9 @@ const router = express.Router();
 const routes_controller = require("./climbingRouteController");
 
 router.route("/")
-    .get(routes_controller.climbing_routes_list)
-    .post(routes_controller.climbing_routes_create)
-    .delete(routes_controller.climbing_routes_remove)
-    .put(routes_controller.climbing_routes_update);
+    .get(routes_controller.getAllRoutes)
+    .post(routes_controller.createClimbingRoute)
+    .delete(routes_controller.deleteClimbingRoute)
+    .put(routes_controller.updateClimbingRoute);
 
 module.exports = router;

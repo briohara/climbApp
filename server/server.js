@@ -6,6 +6,11 @@ require("mongoose").connect(config.db.url, { useUnifiedTopology: true, useNewUrl
 //Set global express settings
 require("./middleware/appMiddleware")(app);
 
+//Seed the database
+if(config.seed) {
+  require("./util/seed.js");
+}
+
 //routers
 const api = require("./api/api");
 

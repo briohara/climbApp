@@ -5,10 +5,9 @@ let config = {
     test: "testing",
     prod: "production",
     port: process.env.PORT || 6900,
-    
-    //expireTime: 24*60*10,
+    expireTime: 24*60*10, //10 days in minutes
     secret: {
-        jtw: process.env.JWT || "gumball"
+        jwt: process.env.JWT || "gumball"
     }
 };
 
