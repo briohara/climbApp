@@ -26,9 +26,18 @@
     dispatch("cancelNewRoute", { _id: route._id });
   }
 
-  function getRouteObject() {
+  function getNewRouteObject() {
     return {
-      route: {
+        name: name,
+        rating: parseFloat(rating),
+        attempts: attempts,
+        points_earned: points_earned,
+        total_points: potential_points
+      }
+  }
+
+  function getExistingRouteObject() {
+    return {
         _id: _id,
         name: name,
         rating: parseFloat(rating),
@@ -36,24 +45,36 @@
         points_earned: points_earned,
         total_points: potential_points
       }
-    };
   }
 
   function saveRoute(route) {
-    let newRoute = getRouteObject();
-    api.addNewRoute(newRoute).then(() => {
-      edit = !edit;
-      cancelNewRoute();
-      functions.fetchRoutes();
-    });
+    let newRoute = getNewRouteObject();
+    let existingRoute = getExistingRouteObject();
+
+    if (_id === 1){
+      api.addNewRoute(newRoute).then(() => {
+        edit = !edit;
+        cancelNewRoute();
+        functions.fetchRoutes();
+      });
+    } else {
+      api.updateRoute(existingRoute).then(() => {
+        edit = !edit;
+        functions.fetchRoutes();
+      })
+    }
           
   }
   
   function deleteRoute() {
-    let route = getRouteObject();
-    api.deleteRoute(route).then(() => {
+    let existingRoute = getExistingRouteObject();
+    api.deleteRoute(existingRoute).then(() => {
       functions.fetchRoutes();
     });
+  }
+
+  function editRoute() {
+    edit = true;
   }
 </script>
 
@@ -68,7 +89,7 @@
   <td>{potential_points}</td>
   <td>{points_earned}</td>
   <td class="text-right">
-    <button class="btn btn-light">Edit</button>
+    <button class="btn btn-light" on:click={editRoute}>Edit</button>
     <button class="btn btn-light" on:click={deleteRoute}>Delete</button>
   </td>
 </tr>
@@ -117,7 +138,7 @@
   </td>
   <td class="text-right">
     <button class="btn btn-light" on:click={saveRoute}>Save</button>
-    <button class="btn btn-light" on:click={cancelNewRoute} on:click={clear}>
+    <button class="btn btn-light" on:click={cancelNewRoute} >
       Cancel
     </button>
   </td>

@@ -7,7 +7,7 @@
   import TotalPoints from "./components/TotalPoints.svelte";
 
   let routes = [];
-  let totalPoints = reducePoints();
+  let totalPoints = 0;
   let addRouteDisabled = false;
 
   onMount(() => {
@@ -17,16 +17,15 @@
   function fetchRoutes() {
     api.getAllRoutes().then(data => {
       routes = data;
-    })
+      reducePoints();
+    });
   }
 
   function reducePoints() {
     if (routes.length === 0) {
-      return 0;
+      totalPoints = 0;
     } else {
-      return routes.reduce(
-        (total, current) => total.points_earned + current.points_earned
-      );
+      totalPoints = routes.map(r => r.points_earned).reduce((a, b) => a + b);
     }
   }
 
@@ -46,36 +45,30 @@
   }
 
   function cancelNewRoute(e) {
-    routes = routes.filter(r => {
-      return r._id !== e.detail._id;
-    });
+    if (e.detail._id === 1) {
+      routes = routes.filter(r => {
+        return r._id !== e.detail._id;
+      });
+    } else {
+      const index = routes.map(r => r._id).indexOf(e.detail._id);
+      routes[index].edit = false;
+    }
     addRouteDisabled = false;
-  } 
+  }
 
   function enableNewRouteButton(e) {
     addRouteDisabled = false;
   }
 
-  function hello() {
-    console.log("hello");
-  }
-
   let functions = {
-    fetchRoutes: fetchRoutes,
-    hello: hello
-  }
+    fetchRoutes: fetchRoutes
+  };
 </script>
 
 <div class="container">
-  <RouteList  
-    bind:routes
-    {functions}
-    on:cancelNewRoute={cancelNewRoute}/>
+  <RouteList bind:routes {functions} on:cancelNewRoute={cancelNewRoute} />
   <div class="row justify-content-between">
     <AddRoute {addRoute} bind:addRouteDisabled />
     <TotalPoints {totalPoints} />
-    <!-- WIP -->
   </div>
 </div>
-
-<button on:click={console.log(routes)}>TEST</button>
