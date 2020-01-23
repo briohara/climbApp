@@ -26,6 +26,7 @@
     dispatch("cancelNewRoute", { _id: route._id });
   }
 
+<<<<<<< HEAD
   function getNewRouteObject() {
     return {
         name: name,
@@ -38,6 +39,11 @@
 
   function getExistingRouteObject() {
     return {
+=======
+  function getRouteObject() {
+    return {
+      route: {
+>>>>>>> 3c6c422be8d5cbefd16e77a521ad4a3b2aed309c
         _id: _id,
         name: name,
         rating: parseFloat(rating),
@@ -45,6 +51,7 @@
         points_earned: points_earned,
         total_points: potential_points
       }
+<<<<<<< HEAD
   }
 
   function saveRoute(route) {
@@ -63,10 +70,23 @@
         functions.fetchRoutes();
       })
     }
+=======
+    };
+  }
+
+  function saveRoute(route) {
+    let newRoute = getRouteObject();
+    api.addNewRoute(newRoute).then(() => {
+      edit = !edit;
+      cancelNewRoute();
+      functions.fetchRoutes();
+    });
+>>>>>>> 3c6c422be8d5cbefd16e77a521ad4a3b2aed309c
           
   }
   
   function deleteRoute() {
+<<<<<<< HEAD
     let existingRoute = getExistingRouteObject();
     api.deleteRoute(existingRoute).then(() => {
       functions.fetchRoutes();
@@ -76,6 +96,13 @@
   function editRoute() {
     edit = true;
   }
+=======
+    let route = getRouteObject();
+    api.deleteRoute(route).then(() => {
+      functions.fetchRoutes();
+    });
+  }
+>>>>>>> 3c6c422be8d5cbefd16e77a521ad4a3b2aed309c
 </script>
 
 <style>
@@ -89,7 +116,11 @@
   <td>{potential_points}</td>
   <td>{points_earned}</td>
   <td class="text-right">
+<<<<<<< HEAD
     <button class="btn btn-light" on:click={editRoute}>Edit</button>
+=======
+    <button class="btn btn-light">Edit</button>
+>>>>>>> 3c6c422be8d5cbefd16e77a521ad4a3b2aed309c
     <button class="btn btn-light" on:click={deleteRoute}>Delete</button>
   </td>
 </tr>
@@ -138,7 +169,11 @@
   </td>
   <td class="text-right">
     <button class="btn btn-light" on:click={saveRoute}>Save</button>
+<<<<<<< HEAD
     <button class="btn btn-light" on:click={cancelNewRoute} >
+=======
+    <button class="btn btn-light" on:click={cancelNewRoute} on:click={clear}>
+>>>>>>> 3c6c422be8d5cbefd16e77a521ad4a3b2aed309c
       Cancel
     </button>
   </td>
