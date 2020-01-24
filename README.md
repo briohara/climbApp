@@ -7,8 +7,7 @@
 ### Running the app
 
 - Make sure the db is running following the directions to set up MongoDB
-- From root start front end with "npm run client"
-- From root start back end with "npm run server"
+- [UPDATE THIS]
 
 ## Setting up MongoDB
 - Install MongoDB and locate the bin folder of MongoDB (should be directly on C drive).
