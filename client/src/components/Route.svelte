@@ -28,30 +28,30 @@
 
   function getNewRouteObject() {
     return {
-        name: name,
-        rating: parseFloat(rating),
-        attempts: attempts,
-        points_earned: points_earned,
-        total_points: potential_points
-      }
+      name: name,
+      rating: rating,
+      attempts: attempts,
+      points_earned: points_earned,
+      total_points: potential_points
+    };
   }
 
   function getExistingRouteObject() {
     return {
-        _id: _id,
-        name: name,
-        rating: parseFloat(rating),
-        attempts: attempts,
-        points_earned: points_earned,
-        total_points: potential_points
-      }
+      _id: _id,
+      name: name,
+      rating: rating,
+      attempts: attempts,
+      points_earned: points_earned,
+      total_points: potential_points
+    };
   }
 
   function saveRoute(route) {
     let newRoute = getNewRouteObject();
     let existingRoute = getExistingRouteObject();
 
-    if (_id === 1){
+    if (_id === 1) {
       api.addNewRoute(newRoute).then(() => {
         edit = !edit;
         cancelNewRoute();
@@ -61,11 +61,10 @@
       api.updateRoute(existingRoute).then(() => {
         edit = !edit;
         functions.fetchRoutes();
-      })
+      });
     }
-          
   }
-  
+
   function deleteRoute() {
     let existingRoute = getExistingRouteObject();
     api.deleteRoute(existingRoute).then(() => {
@@ -138,8 +137,6 @@
   </td>
   <td class="text-right">
     <button class="btn btn-light" on:click={saveRoute}>Save</button>
-    <button class="btn btn-light" on:click={cancelNewRoute} >
-      Cancel
-    </button>
+    <button class="btn btn-light" on:click={cancelNewRoute}>Cancel</button>
   </td>
 </tr>
