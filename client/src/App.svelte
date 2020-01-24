@@ -38,8 +38,7 @@
         name: "",
         rating: "",
         attempts: "",
-        points_earned: 0,
-        total_points: 0
+        points_earned: 0
       }
     ];
   }

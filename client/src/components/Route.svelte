@@ -11,14 +11,12 @@
   let name = route.name;
   let rating = route.rating;
   let attempts = route.attempts;
-  let potential_points = route.total_points;
   let points_earned = route.points_earned;
 
   function clear() {
     name = "";
     rating = "";
     attempts = "";
-    potential_points = "";
     points_earned = "";
   }
 
@@ -31,8 +29,7 @@
       name: name,
       rating: rating,
       attempts: attempts,
-      points_earned: points_earned,
-      total_points: potential_points
+      points_earned: points_earned
     };
   }
 
@@ -42,8 +39,7 @@
       name: name,
       rating: rating,
       attempts: attempts,
-      points_earned: points_earned,
-      total_points: potential_points
+      points_earned: points_earned
     };
   }
 
@@ -85,7 +81,6 @@
   <td>{name}</td>
   <td>{rating}</td>
   <td>{attempts}</td>
-  <td>{potential_points}</td>
   <td>{points_earned}</td>
   <td class="text-right">
     <button class="btn btn-light" on:click={editRoute}>Edit</button>
@@ -120,13 +115,6 @@
       placeholder="Attempts"
       class="form-control"
       bind:value={attempts} />
-  </td>
-  <td>
-    <input
-      type="number"
-      placeholder="Potential Points"
-      class="form-control"
-      bind:value={potential_points} />
   </td>
   <td>
     <input

@@ -5,14 +5,12 @@
   let name = "";
   let rating = "";
   let attempts = "";
-  let potential_points = "";
   let points_earned = "";
 
   function clear() {
     name = "";
     rating = "";
     attempts = "";
-    potential_points = "";
     points_earned = "";
   }
 </script>
@@ -48,13 +46,6 @@
       placeholder="Attempts"
       class="form-control"
       bind:value={attempts} />
-  </td>
-  <td>
-    <input
-      type="number"
-      placeholder="Potential Points"
-      class="form-control"
-      bind:value={potential_points} />
   </td>
   <td>
     <input

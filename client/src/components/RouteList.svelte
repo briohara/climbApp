@@ -14,7 +14,6 @@
       _id: e.detail._id
     });
   }
-
 </script>
 
 <style>
@@ -27,7 +26,6 @@
       <th scope="col">Name</th>
       <th scope="col">Rating</th>
       <th scope="col">Attempts</th>
-      <th scope="col">Potential Points</th>
       <th scope="col">Points Earned</th>
       <th />
     </tr>
