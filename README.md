@@ -4,7 +4,11 @@
 
 - Both backend and frontend folders have a configuration file called .env . Currently this is in the repo but will be removed in the future.
 
-- Backend needs to be run seperatly currently using "node app" while the front end gets spun up using "npm start".
+### Running the app
+
+- Make sure the db is running following the directions to set up MongoDB
+- From root start front end with "npm run client"
+- From root start back end with "npm run server"
 
 ## Setting up MongoDB
 - Install MongoDB and locate the bin folder of MongoDB (should be directly on C drive).
