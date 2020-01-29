@@ -3,11 +3,26 @@ const ClimbingRouteModel = require("./climbingRouteModel");
 exports.getAllRoutes = function(req, res, next) {
   ClimbingRouteModel.find().exec((err, list_climbingRoutes) => {
     if (err) {
-      return next(err);
+      console.log(`Error while querying all routes: ${err}`);
+      res.status(500).send("Error occured during query. CHECK LOGS.");
     }
     console.log("Finding Routes...");
     res.json(list_climbingRoutes);
   });
+};
+
+exports.getUserRoutes = function(req, res, next) {
+  ClimbingRouteModel.find(
+    { user_id: req.user._id },
+    (err, list_climbingRoutes) => {
+      if (err) {
+        console.log(`Error while querying data: ${err}`);
+        res.status(500).send("Error occured during query. CHECK LOGS.");
+      }
+      console.log(`Finding Routes by user ${req.user._id}..`);
+      res.json(list_climbingRoutes);
+    }
+  );
 };
 
 exports.createClimbingRoute = [
@@ -18,7 +33,8 @@ exports.createClimbingRoute = [
     //save new route
     climbingRoute.save((err, product) => {
       if (err) {
-        return next(err);
+        console.log(`Error while creating: ${err}`);
+        res.status(500).send("Error occured during create. CHECK LOGS.");
       }
       console.log("Creating Route...");
       // Successful!!

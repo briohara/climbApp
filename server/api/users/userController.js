@@ -1,27 +1,29 @@
-const userModel = require("./userModel");
+const UserModel = require("./userModel");
 const _ = require("lodash");
-const signToken = require("../../auth/auth");
+const { signToken } = require("../auth/auth");
 
 //get user
 exports.getUser = function(req, res, next) {
-    console.log(JSON.stringify(req));
-    userModel.findById(req.body.user._id, (err, user) => {
-        if(err) return next(err);
-        console.log("Finding user by id...");
+  console.log(JSON.stringify(req));
+  UserModel.findById(req.body.user._id, (err, user) => {
+    if (err) return next(err);
+    console.log("Finding user by id...");
 
-        //Successful!
-        res.json(user);
-    })
+    //Successful!
+    res.json(user);
+  });
 };
 
-exports.createUser = function (req, res, next) {
-    let newUser = new userModel(req.body);
-    console.log("New user: " + newUser);
+exports.createUser = function(req, res, next) {
+  let newUser = new UserModel(req.body);
+  console.log("New user: " + newUser);
 
-    newUser.save((err, user) => {
-        if(err) {next(err);}
+  newUser.save((err, user) => {
+    if (err) {
+      next(err);
+    }
 
-        let token = signToken(user._id);
-        res.json({token: token});
-    });
+    let token = signToken(newUser._id);
+    res.json({ token: token });
+  });
 };
