@@ -1,18 +1,12 @@
 import React from "react";
-import { deleteRoute } from "../api/api";
 
 const Route = props => {
   const { name, rating, attempts, points_earned, _id } = props.route;
   const jwt = props.jwt;
-
-  function handleDelete() {
-    deleteRoute(jwt, _id)
-      .then()
-      .catch();
-  }
+  const handleDelete = props.handleDelete;
 
   return (
-    <tr key={name}>
+    <tr>
       <td>{name}</td>
       <td>{rating}</td>
       <td>{attempts}</td>
@@ -23,7 +17,11 @@ const Route = props => {
         </button>
       </td>
       <td>
-        <button type="button" className="btn btn-danger" onClick={handleDelete}>
+        <button
+          type="button"
+          className="btn btn-danger"
+          onClick={e => handleDelete(jwt, _id)}
+        >
           Delete
         </button>
       </td>

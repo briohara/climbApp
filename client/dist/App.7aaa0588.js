@@ -35318,7 +35318,110 @@ var reloadCSS = require('_css_loader');
 
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
-},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../node_modules/axios/lib/helpers/bind.js":[function(require,module,exports) {
+},{"_css_loader":"../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"../node_modules/jwt-decode/lib/atob.js":[function(require,module,exports) {
+/**
+ * The code was extracted from:
+ * https://github.com/davidchambers/Base64.js
+ */
+
+var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+
+function InvalidCharacterError(message) {
+  this.message = message;
+}
+
+InvalidCharacterError.prototype = new Error();
+InvalidCharacterError.prototype.name = 'InvalidCharacterError';
+
+function polyfill (input) {
+  var str = String(input).replace(/=+$/, '');
+  if (str.length % 4 == 1) {
+    throw new InvalidCharacterError("'atob' failed: The string to be decoded is not correctly encoded.");
+  }
+  for (
+    // initialize result and counters
+    var bc = 0, bs, buffer, idx = 0, output = '';
+    // get next character
+    buffer = str.charAt(idx++);
+    // character found in table? initialize bit storage and add its ascii value;
+    ~buffer && (bs = bc % 4 ? bs * 64 + buffer : buffer,
+      // and if not first of each 4 characters,
+      // convert the first 8 bits to one ascii character
+      bc++ % 4) ? output += String.fromCharCode(255 & bs >> (-2 * bc & 6)) : 0
+  ) {
+    // try to find character in table (0-63, not found => -1)
+    buffer = chars.indexOf(buffer);
+  }
+  return output;
+}
+
+
+module.exports = typeof window !== 'undefined' && window.atob && window.atob.bind(window) || polyfill;
+
+},{}],"../node_modules/jwt-decode/lib/base64_url_decode.js":[function(require,module,exports) {
+var atob = require('./atob');
+
+function b64DecodeUnicode(str) {
+  return decodeURIComponent(atob(str).replace(/(.)/g, function (m, p) {
+    var code = p.charCodeAt(0).toString(16).toUpperCase();
+    if (code.length < 2) {
+      code = '0' + code;
+    }
+    return '%' + code;
+  }));
+}
+
+module.exports = function(str) {
+  var output = str.replace(/-/g, "+").replace(/_/g, "/");
+  switch (output.length % 4) {
+    case 0:
+      break;
+    case 2:
+      output += "==";
+      break;
+    case 3:
+      output += "=";
+      break;
+    default:
+      throw "Illegal base64url string!";
+  }
+
+  try{
+    return b64DecodeUnicode(output);
+  } catch (err) {
+    return atob(output);
+  }
+};
+
+},{"./atob":"../node_modules/jwt-decode/lib/atob.js"}],"../node_modules/jwt-decode/lib/index.js":[function(require,module,exports) {
+'use strict';
+
+var base64_url_decode = require('./base64_url_decode');
+
+function InvalidTokenError(message) {
+  this.message = message;
+}
+
+InvalidTokenError.prototype = new Error();
+InvalidTokenError.prototype.name = 'InvalidTokenError';
+
+module.exports = function (token,options) {
+  if (typeof token !== 'string') {
+    throw new InvalidTokenError('Invalid token specified');
+  }
+
+  options = options || {};
+  var pos = options.header === true ? 0 : 1;
+  try {
+    return JSON.parse(base64_url_decode(token.split('.')[pos]));
+  } catch (e) {
+    throw new InvalidTokenError('Invalid token specified: ' + e.message);
+  }
+};
+
+module.exports.InvalidTokenError = InvalidTokenError;
+
+},{"./base64_url_decode":"../node_modules/jwt-decode/lib/base64_url_decode.js"}],"../node_modules/axios/lib/helpers/bind.js":[function(require,module,exports) {
 'use strict';
 
 module.exports = function bind(fn, thisArg) {
@@ -37088,7 +37191,8 @@ var proxy = "http://localhost:6900/api/";
 var requestConfig = {
   headers: {
     Authorization: ""
-  }
+  },
+  data: {}
 }; //Add token to all these fools
 
 function getAllRoutes(jwt) {
@@ -37101,8 +37205,11 @@ function getAllRoutes(jwt) {
   });
 }
 
-function addNewRoute(route) {
-  return axios.post("".concat(proxy, "routes"), route).then(function (res) {
+function createRoute(jwt, route) {
+  //Attach token to request
+  requestConfig.headers.Authorization = "Bearer ".concat(jwt);
+  requestConfig.data = route;
+  return axios.post("".concat(proxy, "routes"), requestConfig.data, requestConfig).then(function (res) {
     return res.data;
   }).catch(function (err) {
     console.error(err);
@@ -37120,13 +37227,8 @@ function updateRoute(route) {
 function deleteRoute(jwt, routeId) {
   //Attach token to request
   requestConfig.headers.Authorization = "Bearer ".concat(jwt);
-  requestConfig.data = {
-    _id: routeId
-  };
-  console.log(JSON.stringify(requestConfig));
-  return axios.delete("".concat(proxy, "routes"), {
-    requestConfig: requestConfig
-  }).then(function (res) {
+  requestConfig.data._id = routeId;
+  return axios.delete("".concat(proxy, "routes"), requestConfig).then(function (res) {
     return res.data;
   }).catch(function (err) {
     console.error(err);
@@ -37153,166 +37255,13 @@ function createUser(user) {
 
 module.exports = {
   getAllRoutes: getAllRoutes,
-  addNewRoute: addNewRoute,
+  createRoute: createRoute,
   updateRoute: updateRoute,
   deleteRoute: deleteRoute,
   signIn: signIn,
   createUser: createUser
 };
-},{"axios":"../node_modules/axios/index.js"}],"../src/components/Route.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _react = _interopRequireDefault(require("react"));
-
-var _api = require("../api/api");
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Route = function Route(props) {
-  var _props$route = props.route,
-      name = _props$route.name,
-      rating = _props$route.rating,
-      attempts = _props$route.attempts,
-      points_earned = _props$route.points_earned,
-      _id = _props$route._id;
-  var jwt = props.jwt;
-
-  function handleDelete() {
-    (0, _api.deleteRoute)(jwt, _id).then().catch();
-  }
-
-  return _react.default.createElement("tr", {
-    key: name
-  }, _react.default.createElement("td", null, name), _react.default.createElement("td", null, rating), _react.default.createElement("td", null, attempts), _react.default.createElement("td", null, points_earned), _react.default.createElement("td", null, _react.default.createElement("button", {
-    type: "button",
-    className: "btn btn-warning"
-  }, "Edit")), _react.default.createElement("td", null, _react.default.createElement("button", {
-    type: "button",
-    className: "btn btn-danger",
-    onClick: handleDelete
-  }, "Delete")));
-};
-
-var _default = Route;
-exports.default = _default;
-},{"react":"../node_modules/react/index.js","../api/api":"../src/api/api.js"}],"../src/components/UserRoutes.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _react = _interopRequireWildcard(require("react"));
-
-var _api = require("../api/api");
-
-var _Route = _interopRequireDefault(require("./Route"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-var UserRoutes = function UserRoutes(_ref) {
-  var cookie = _ref.cookie;
-  var jwt = cookie.JWT;
-
-  var _useState = (0, _react.useState)([]),
-      _useState2 = _slicedToArray(_useState, 2),
-      routes = _useState2[0],
-      setRoutes = _useState2[1];
-
-  (0, _react.useEffect)(function () {
-    //grab routes from db with User Id (right now just grab all)
-    (0, _api.getAllRoutes)(jwt).then(function (data) {
-      setRoutes(data);
-    }).catch(function (err) {
-      console.error(err);
-    });
-  }, []);
-  return _react.default.createElement("table", {
-    className: "table table-striped"
-  }, _react.default.createElement("thead", null, _react.default.createElement("tr", null, _react.default.createElement("th", {
-    scope: "col"
-  }, "Name"), _react.default.createElement("th", {
-    scope: "col"
-  }, "Rating"), _react.default.createElement("th", {
-    scope: "col"
-  }, "Attempts"), _react.default.createElement("th", {
-    scope: "col"
-  }, "Points Earned"), _react.default.createElement("th", {
-    scope: "col"
-  }), _react.default.createElement("th", {
-    scope: "col"
-  }))), _react.default.createElement("tbody", null, routes.length === 0 ? null : routes.map(function (route) {
-    return _react.default.createElement(_Route.default, {
-      route: route,
-      jwt: jwt
-    });
-  })));
-};
-
-var _default = UserRoutes;
-exports.default = _default;
-},{"react":"../node_modules/react/index.js","../api/api":"../src/api/api.js","./Route":"../src/components/Route.js"}],"../src/components/Userpage.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-
-var _react = _interopRequireWildcard(require("react"));
-
-var _reactCookie = require("react-cookie");
-
-var _UserRoutes = _interopRequireDefault(require("./UserRoutes"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
-var Userpage = function Userpage() {
-  var _useCookies = (0, _reactCookie.useCookies)("JWT"),
-      _useCookies2 = _slicedToArray(_useCookies, 2),
-      cookie = _useCookies2[0],
-      setCookie = _useCookies2[1];
-
-  return _react.default.createElement("div", {
-    className: "container"
-  }, _react.default.createElement(_UserRoutes.default, {
-    cookie: cookie
-  }));
-};
-
-var _default = Userpage;
-exports.default = _default;
-},{"react":"../node_modules/react/index.js","react-cookie":"../node_modules/react-cookie/es6/index.js","./UserRoutes":"../src/components/UserRoutes.js"}],"../src/components/Login.js":[function(require,module,exports) {
+},{"axios":"../node_modules/axios/index.js"}],"../src/components/Login.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -37326,9 +37275,9 @@ var _router = require("@reach/router");
 
 var _reactCookie = require("react-cookie");
 
-var _api = require("../api/api");
+var _jwtDecode = _interopRequireDefault(require("jwt-decode"));
 
-var _Userpage = _interopRequireDefault(require("./Userpage"));
+var _api = require("../api/api");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -37360,7 +37309,8 @@ var Login = function Login(props) {
       cookies = _useCookies2[0],
       setCookie = _useCookies2[1];
 
-  if (cookies.length > 0) {
+  if ((0, _jwtDecode.default)(cookies.JWT).exp > new Date().getTime() / 1000) {
+    console.log("Token is not expired.");
     (0, _router.navigate)("userpage");
   }
 
@@ -37420,7 +37370,7 @@ var Login = function Login(props) {
 
 var _default = Login;
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","@reach/router":"../node_modules/@reach/router/es/index.js","react-cookie":"../node_modules/react-cookie/es6/index.js","../api/api":"../src/api/api.js","./Userpage":"../src/components/Userpage.js"}],"../src/components/Signup.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","@reach/router":"../node_modules/@reach/router/es/index.js","react-cookie":"../node_modules/react-cookie/es6/index.js","jwt-decode":"../node_modules/jwt-decode/lib/index.js","../api/api":"../src/api/api.js"}],"../src/components/Signup.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -37527,7 +37477,296 @@ var Signup = function Signup(props) {
 
 var _default = Signup;
 exports.default = _default;
-},{"react":"../node_modules/react/index.js","@reach/router":"../node_modules/@reach/router/es/index.js","../api/api":"../src/api/api.js","./Login":"../src/components/Login.js"}],"../src/App.js":[function(require,module,exports) {
+},{"react":"../node_modules/react/index.js","@reach/router":"../node_modules/@reach/router/es/index.js","../api/api":"../src/api/api.js","./Login":"../src/components/Login.js"}],"../src/components/Route.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Route = function Route(props) {
+  var _props$route = props.route,
+      name = _props$route.name,
+      rating = _props$route.rating,
+      attempts = _props$route.attempts,
+      points_earned = _props$route.points_earned,
+      _id = _props$route._id;
+  var jwt = props.jwt;
+  var handleDelete = props.handleDelete;
+  return _react.default.createElement("tr", null, _react.default.createElement("td", null, name), _react.default.createElement("td", null, rating), _react.default.createElement("td", null, attempts), _react.default.createElement("td", null, points_earned), _react.default.createElement("td", null, _react.default.createElement("button", {
+    type: "button",
+    className: "btn btn-warning"
+  }, "Edit")), _react.default.createElement("td", null, _react.default.createElement("button", {
+    type: "button",
+    className: "btn btn-danger",
+    onClick: function onClick(e) {
+      return handleDelete(jwt, _id);
+    }
+  }, "Delete")));
+};
+
+var _default = Route;
+exports.default = _default;
+},{"react":"../node_modules/react/index.js"}],"../src/components/NewRoute.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireWildcard(require("react"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var NewRoute = function NewRoute(props) {
+  var jwt = props.jwt;
+  var handleCreate = props.handleCreate;
+  var handleCancel = props.handleCancel;
+
+  var _useState = (0, _react.useState)(""),
+      _useState2 = _slicedToArray(_useState, 2),
+      name = _useState2[0],
+      setName = _useState2[1];
+
+  var _useState3 = (0, _react.useState)(""),
+      _useState4 = _slicedToArray(_useState3, 2),
+      rating = _useState4[0],
+      setRating = _useState4[1];
+
+  var _useState5 = (0, _react.useState)(""),
+      _useState6 = _slicedToArray(_useState5, 2),
+      attempts = _useState6[0],
+      setAttempts = _useState6[1];
+
+  var _useState7 = (0, _react.useState)(""),
+      _useState8 = _slicedToArray(_useState7, 2),
+      points_earned = _useState8[0],
+      setPointsEarned = _useState8[1];
+
+  return _react.default.createElement("tr", {
+    key: "New Route"
+  }, _react.default.createElement("td", null, _react.default.createElement("input", {
+    id: "name",
+    type: "text",
+    value: name,
+    onChange: function onChange(e) {
+      setName(e.target.value);
+    }
+  })), _react.default.createElement("td", null, _react.default.createElement("input", {
+    id: "rating",
+    type: "text",
+    value: rating,
+    onChange: function onChange(e) {
+      return setRating(e.target.value);
+    }
+  })), _react.default.createElement("td", null, _react.default.createElement("input", {
+    id: "attempts",
+    type: "number",
+    value: attempts,
+    onChange: function onChange(e) {
+      return setAttempts(e.target.value);
+    }
+  })), _react.default.createElement("td", null, _react.default.createElement("input", {
+    id: "points_earned",
+    type: "number",
+    value: points_earned,
+    onChange: function onChange(e) {
+      return setPointsEarned(e.target.value);
+    }
+  })), _react.default.createElement("td", null, _react.default.createElement("button", {
+    type: "button",
+    className: "btn btn-success",
+    onClick: function onClick() {
+      handleCreate(jwt, {
+        name: name,
+        rating: rating,
+        attempts: attempts,
+        points_earned: points_earned
+      });
+    }
+  }, "Save")), _react.default.createElement("td", null, _react.default.createElement("button", {
+    type: "button",
+    className: "btn btn-danger",
+    onClick: handleCancel
+  }, "Cancel")));
+};
+
+var _default = NewRoute;
+exports.default = _default;
+},{"react":"../node_modules/react/index.js"}],"../src/components/UserRoutes.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _api = require("../api/api");
+
+var _Route = _interopRequireDefault(require("./Route"));
+
+var _NewRoute = _interopRequireDefault(require("./NewRoute"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var UserRoutes = function UserRoutes(_ref) {
+  var cookie = _ref.cookie;
+  var jwt = cookie.JWT;
+
+  var _useState = (0, _react.useState)([]),
+      _useState2 = _slicedToArray(_useState, 2),
+      routes = _useState2[0],
+      setRoutes = _useState2[1];
+
+  var _useState3 = (0, _react.useState)(false),
+      _useState4 = _slicedToArray(_useState3, 2),
+      deletedRoute = _useState4[0],
+      setDeletedRoute = _useState4[1];
+
+  var _useState5 = (0, _react.useState)(false),
+      _useState6 = _slicedToArray(_useState5, 2),
+      showAddRoute = _useState6[0],
+      setShowAddRoute = _useState6[1];
+
+  (0, _react.useEffect)(function () {
+    setDeletedRoute(false); //grab routes from db with User Id (right now just grab all)
+
+    (0, _api.getAllRoutes)(jwt).then(function (data) {
+      setRoutes(data);
+    }).catch(function (err) {
+      console.error(err);
+    });
+  }, [deletedRoute, showAddRoute]);
+
+  function handleDelete(jwt, _id) {
+    (0, _api.deleteRoute)(jwt, _id).then( //find out how to rerender
+    setDeletedRoute(true), console.log("successful")).catch(function (err) {
+      console.error(err);
+    });
+  }
+
+  function handleCreate(jwt, route) {
+    (0, _api.createRoute)(jwt, route).then(setShowAddRoute(false)).catch(function (err) {
+      console.error(err);
+    });
+  }
+
+  function handleCancel() {
+    setShowAddRoute(false);
+  }
+
+  return _react.default.createElement("div", {
+    id: "user-routes"
+  }, _react.default.createElement("table", {
+    className: "table table-striped"
+  }, _react.default.createElement("thead", null, _react.default.createElement("tr", null, _react.default.createElement("th", {
+    scope: "col"
+  }, "Name"), _react.default.createElement("th", {
+    scope: "col"
+  }, "Rating"), _react.default.createElement("th", {
+    scope: "col"
+  }, "Attempts"), _react.default.createElement("th", {
+    scope: "col"
+  }, "Points Earned"), _react.default.createElement("th", {
+    scope: "col"
+  }), _react.default.createElement("th", {
+    scope: "col"
+  }))), _react.default.createElement("tbody", null, routes === undefined ? null : routes.map(function (route) {
+    return _react.default.createElement(_Route.default, {
+      key: route.name,
+      route: route,
+      jwt: jwt,
+      handleDelete: handleDelete
+    });
+  }), showAddRoute ? _react.default.createElement(_NewRoute.default, {
+    jwt: jwt,
+    handleCancel: handleCancel,
+    handleCreate: handleCreate
+  }) : null)), _react.default.createElement("button", {
+    type: "button",
+    className: "btn btn-success",
+    onClick: function onClick() {
+      setShowAddRoute(true);
+    }
+  }, "Add Route"));
+};
+
+var _default = UserRoutes;
+exports.default = _default;
+},{"react":"../node_modules/react/index.js","../api/api":"../src/api/api.js","./Route":"../src/components/Route.js","./NewRoute":"../src/components/NewRoute.js"}],"../src/components/Userpage.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _react = _interopRequireWildcard(require("react"));
+
+var _reactCookie = require("react-cookie");
+
+var _UserRoutes = _interopRequireDefault(require("./UserRoutes"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+var Userpage = function Userpage() {
+  var _useCookies = (0, _reactCookie.useCookies)("JWT"),
+      _useCookies2 = _slicedToArray(_useCookies, 2),
+      cookie = _useCookies2[0],
+      setCookie = _useCookies2[1];
+
+  return _react.default.createElement("div", {
+    className: "container"
+  }, _react.default.createElement(_UserRoutes.default, {
+    cookie: cookie
+  }));
+};
+
+var _default = Userpage;
+exports.default = _default;
+},{"react":"../node_modules/react/index.js","react-cookie":"../node_modules/react-cookie/es6/index.js","./UserRoutes":"../src/components/UserRoutes.js"}],"../src/App.js":[function(require,module,exports) {
 "use strict";
 
 var _react = _interopRequireDefault(require("react"));
@@ -37589,7 +37828,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55855" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57422" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

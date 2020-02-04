@@ -4,7 +4,8 @@ const proxy = "http://localhost:6900/api/";
 const requestConfig = {
   headers: {
     Authorization: ""
-  }
+  },
+  data: {}
 };
 
 //Add token to all these fools
@@ -22,9 +23,13 @@ function getAllRoutes(jwt) {
     });
 }
 
-function addNewRoute(route) {
+function createRoute(jwt, route) {
+  //Attach token to request
+  requestConfig.headers.Authorization = `Bearer ${jwt}`;
+  requestConfig.data = route;
+
   return axios
-    .post(`${proxy}routes`, route)
+    .post(`${proxy}routes`, requestConfig.data, requestConfig)
     .then(res => {
       return res.data;
     })
@@ -47,10 +52,10 @@ function updateRoute(route) {
 function deleteRoute(jwt, routeId) {
   //Attach token to request
   requestConfig.headers.Authorization = `Bearer ${jwt}`;
-  requestConfig.data = { _id: routeId };
-  console.log(JSON.stringify(requestConfig));
+  requestConfig.data._id = routeId;
+
   return axios
-    .delete(`${proxy}routes`, { requestConfig })
+    .delete(`${proxy}routes`, requestConfig)
     .then(res => {
       return res.data;
     })
@@ -85,7 +90,7 @@ function createUser(user) {
 
 module.exports = {
   getAllRoutes,
-  addNewRoute,
+  createRoute,
   updateRoute,
   deleteRoute,
   signIn,

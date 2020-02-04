@@ -12,8 +12,6 @@ exports.decodeToken = () => {
       req.headers.authorization = "Bearer " + req.query.access_token;
     }
 
-    console.log(req.headers.authorization);
-
     //Checks if token is valid. Adds to req.user if valid
     checkToken(req, res, next);
   };

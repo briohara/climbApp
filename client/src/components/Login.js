@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useImperativeHandle } from "react";
 import { Router, Link, navigate } from "@reach/router";
 import { useCookies } from "react-cookie";
+import jwt_Decode from "jwt-decode";
 
 import { signIn } from "../api/api";
-import Userpage from "./Userpage";
 
 const Login = props => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [cookies, setCookie] = useCookies(["jwt"]);
 
-  if (cookies.length > 0) {
+  if (jwt_Decode(cookies.JWT).exp > new Date().getTime() / 1000) {
+    console.log("Token is not expired.");
     navigate("userpage");
   }
 

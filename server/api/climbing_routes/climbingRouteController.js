@@ -27,7 +27,7 @@ exports.getUserRoutes = function(req, res, next) {
 
 exports.createClimbingRoute = [
   (req, res, next) => {
-    //console.log(req);
+    req.body.user_id = req.user._id;
     let climbingRoute = new ClimbingRouteModel(req.body);
 
     //save new route
@@ -46,7 +46,7 @@ exports.createClimbingRoute = [
 exports.deleteClimbingRoute = [
   (req, res, next) => {
     //delete route by id
-    ClimbingRouteModel.findByIdAndDelete(req.body, err => {
+    ClimbingRouteModel.findByIdAndDelete(req.body._id, err => {
       if (err) {
         console.log(`Error while deleting: ${err}`);
         res.status(500).send("Error occured during delete. CHECK LOGS.");
