@@ -1,6 +1,6 @@
 var router = require("express").Router();
 
-router.use("/routes", require("./climbing_routes/climbingRouteRouter"));
+router.use("/routes", require("./climbingRoutes/climbingRouteRouter"));
 
 router.use("/users", require("./users/userRouter"));
 

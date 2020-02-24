@@ -1,7 +1,15 @@
 const express = require("express");
 var app = express();
+require("dotenv").config({ path: "./config/.env" });
+
 const config = require("./config/config");
-require("mongoose").connect(config.db.url, config.dbSettings);
+require("mongoose")
+  .connect(config.db.url, config.dbSettings)
+  .then(console.log("DB Connected!"))
+  .catch(err => {
+    console.log("Connection to database failed.");
+    process.exit(0);
+  });
 
 //Set global express settings
 require("./middleware/appMiddleware")(app);
@@ -22,6 +30,10 @@ app.use(function(req, res, next) {
 });
 
 //Add error handling
+
+app.listen(config.port, () => {
+  console.log(`App is listening on ${config.port}`);
+});
 
 //export app for testing (will add later)
 module.exports = app;

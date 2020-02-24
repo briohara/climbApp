@@ -2,7 +2,7 @@ module.exports = {
   logging: true,
   seed: false,
   db: {
-    url: "mongodb://localhost/climb-app"
+    url: `mongodb+srv://${process.env.dbUsername}:${process.env.dbPassword}@testcluster-jcqs6.mongodb.net/test?retryWrites=true&w=majority`
   },
   dbSettings: {
     useNewUrlParser: true,

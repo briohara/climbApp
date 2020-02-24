@@ -1,5 +1,5 @@
 const axios = require("axios");
-const proxy = "http://localhost:6900/api/";
+const proxy = `http://localhost:6660/api/`;
 
 const requestConfig = {
   headers: {
@@ -8,7 +8,6 @@ const requestConfig = {
   data: {}
 };
 
-//Add token to all these fools
 function getAllRoutes(jwt) {
   //Attach token to request
   requestConfig.headers.Authorization = `Bearer ${jwt}`;
@@ -24,7 +23,6 @@ function getAllRoutes(jwt) {
 }
 
 function createRoute(jwt, route) {
-  //Attach token to request
   requestConfig.headers.Authorization = `Bearer ${jwt}`;
   requestConfig.data = route;
 
@@ -38,9 +36,11 @@ function createRoute(jwt, route) {
     });
 }
 
-function updateRoute(route) {
+function updateRoute(jwt, route) {
+  requestConfig.headers.Authorization = `Bearer ${jwt}`;
+  requestConfig.data = route;
   return axios
-    .put(`${proxy}routes`, route)
+    .put(`${proxy}routes`, requestConfig.data, requestConfig)
     .then(res => {
       return res.data;
     })
@@ -50,7 +50,6 @@ function updateRoute(route) {
 }
 
 function deleteRoute(jwt, routeId) {
-  //Attach token to request
   requestConfig.headers.Authorization = `Bearer ${jwt}`;
   requestConfig.data._id = routeId;
 
