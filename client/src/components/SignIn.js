@@ -66,7 +66,7 @@ const SignIn = props => {
       })
       .then(res => {
         localStorage.setItem("JWT", res.token);
-        localStorage.setItem("username", username);
+        localStorage.setItem("username", values.username);
         props.setLoggedIn(true);
         history.push("dashboard");
       })
