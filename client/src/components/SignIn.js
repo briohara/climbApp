@@ -3,6 +3,10 @@ import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import IconButton from "@material-ui/core/IconButton";
 import Link from "@material-ui/core/Link";
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
@@ -14,16 +18,7 @@ import { useHistory } from "react-router-dom";
 import jwt_Decode from "jwt-decode";
 
 import * as api from "../api/api";
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {"Copyright © "}
-      Climbing App {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
+import Copyright from "./Copyright";
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -45,10 +40,14 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const SignIn = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+const SignIn = props => {
   const history = useHistory();
+
+  const [values, setValues] = useState({
+    username: "",
+    password: "",
+    showPassword: false
+  });
 
   if (
     localStorage.getItem("JWT") &&
@@ -57,21 +56,34 @@ const SignIn = () => {
     history.push("dashboard");
   }
 
-  function handleSubmit(e) {
+  const handleSubmit = e => {
     e.preventDefault();
 
     api
       .signIn({
-        username: e.target.username.value,
-        password: e.target.password.value
+        username: values.username,
+        password: values.password
       })
       .then(res => {
         localStorage.setItem("JWT", res.token);
         localStorage.setItem("username", username);
+        props.setLoggedIn(true);
         history.push("dashboard");
       })
       .catch(err => console.log(err));
-  }
+  };
+
+  const handleChange = prop => event => {
+    setValues({ ...values, [prop]: event.target.value });
+  };
+
+  const handleClickShowPassword = () => {
+    setValues({ ...values, showPassword: !values.showPassword });
+  };
+
+  const handleMouseDownPassword = event => {
+    event.preventDefault();
+  };
 
   const classes = useStyles();
 
@@ -94,8 +106,8 @@ const SignIn = () => {
             id="username"
             label="Username"
             name="username"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            value={values.username}
+            onChange={handleChange("username")}
             autoFocus
           />
           <TextField
@@ -106,9 +118,22 @@ const SignIn = () => {
             name="password"
             label="Password"
             id="password"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
+            type={values.showPassword ? "text" : "password"}
+            value={values.password}
+            onChange={handleChange("password")}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={handleClickShowPassword}
+                    onMouseDown={handleMouseDownPassword}
+                  >
+                    {values.showPassword ? <Visibility /> : <VisibilityOff />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
           />
           <Button
             type="submit"
@@ -127,7 +152,7 @@ const SignIn = () => {
             </Grid>
             <Grid item>
               <Link href="/signup" variant="body2">
-                "Don't have an account? Sign Up"
+                Don't have an account? Sign Up
               </Link>
             </Grid>
           </Grid>

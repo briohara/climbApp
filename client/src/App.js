@@ -3,6 +3,9 @@ import { render } from "react-dom";
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
 import jwt_Decode from "jwt-decode";
 
+import Button from "@material-ui/core/Button";
+
+import Main from "./components/Main";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 import Dashboard from "./components/Dashboard";
@@ -26,39 +29,51 @@ const App = () => {
     } else {
       setLoggedIn(false);
     }
-  }, [signedOut]);
+  }, [signedOut, loggedIn]);
 
   return (
     <Router>
       <div>
-        <nav>
-          {loggedIn ? (
-            <ul>
-              <li>
-                <Link to="/">
-                  <button type="button" onClick={signOut}>
-                    Sign out
-                  </button>
-                </Link>
-              </li>
-              <li>
-                <Link to="/dashboard">Dashboard!</Link>
-              </li>
-            </ul>
-          ) : (
-            <ul>
-              <li>
-                <Link to="/signin">
-                  <button type="button">Sign in</button>
-                </Link>
-              </li>
-            </ul>
-          )}
-        </nav>
+        <header>
+          <nav>
+            {loggedIn ? (
+              <ul>
+                <li>
+                  <Link to="/dashboard">
+                    <Button variant="outlined" color="primary">
+                      Dashboard!
+                    </Button>
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/">
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={signOut}
+                    >
+                      Sign out
+                    </Button>
+                  </Link>
+                </li>
+              </ul>
+            ) : (
+              <ul>
+                <li>
+                  <Link to="/signin">
+                    <Button variant="outlined" color="primary">
+                      Sign in
+                    </Button>
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </nav>
+        </header>
 
         <Switch>
           <Route path="/signin">
-            <SignIn />
+            <SignIn setLoggedIn={setLoggedIn} />
           </Route>
 
           <Route path="/signup">
@@ -67,6 +82,9 @@ const App = () => {
 
           <Route path="/dashboard">
             <Dashboard />
+          </Route>
+          <Route path="/">
+            <Main />
           </Route>
         </Switch>
       </div>
