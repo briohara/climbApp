@@ -51,7 +51,8 @@ const Signup = () => {
     createUser({
       username: values.username,
       password: values.password,
-      email: values.email
+      email: values.email,
+      isGoogleAccount: false
     })
       .then(navigate("login"))
       .catch(alert("Username/Password is invalid."));

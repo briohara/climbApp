@@ -20,10 +20,10 @@ const UserRoutes = () => {
       type: "numeric"
     },
     {
-      title: "Points Earned",
-      field: "pointsEarned",
-      initialEditValue: 0,
-      type: "numeric"
+      title: "Location",
+      field: "location",
+      initialEditValue: "",
+      type: "string"
     }
   ];
 

@@ -19,6 +19,7 @@ import jwt_Decode from "jwt-decode";
 
 import * as api from "../api/api";
 import Copyright from "./Copyright";
+import GoogleSignInButton from "./GoogleSignInButton";
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -69,6 +70,20 @@ const SignIn = props => {
         localStorage.setItem("username", values.username);
         props.setLoggedIn(true);
         history.push("dashboard");
+      })
+      .catch(err => console.log(err));
+  };
+
+  const onGoogleLoginSuccess = googleUser => {
+    //Grab id token
+    const id_token = googleUser.getAuthResponse().id_token;
+
+    //Send Id token to backend
+    api
+      .verifyGoogleUser(googleUser)
+      .then(res => {
+        console.log(res.data);
+        api.googleUserSignIn(res.data);
       })
       .catch(err => console.log(err));
   };
@@ -157,6 +172,9 @@ const SignIn = props => {
             </Grid>
           </Grid>
         </form>
+        <div>
+          <GoogleSignInButton onSuccess={onGoogleLoginSuccess} />
+        </div>
       </div>
       <Box mt={8}>
         <Copyright />

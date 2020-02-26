@@ -87,11 +87,37 @@ function createUser(user) {
     });
 }
 
+function verifyGoogleUser(googleUser) {
+  return axios
+    .post(`${proxy}auth/googleSignin`, googleUser)
+    .then(res => {
+      return res.data;
+    })
+    .catch(err => {
+      console.error(err);
+      return "Unauthorized";
+    });
+}
+
+function googleUserSignIn(googleUser) {
+  return axios
+    .post(`${proxy}users/googleUserSignin`, googleUser)
+    .then(res => {
+      return res.data;
+    })
+    .catch(err => {
+      console.error(err);
+      return "Unauthorized";
+    });
+}
+
 module.exports = {
   getAllRoutes,
   createRoute,
   updateRoute,
   deleteRoute,
   signIn,
-  createUser
+  createUser,
+  verifyGoogleUser,
+  googleUserSignIn
 };

@@ -15,6 +15,7 @@ const App = () => {
   const [signedOut, setSignedOut] = useState(false);
 
   function signOut() {
+    //Check if google login exists
     localStorage.clear();
     setSignedOut(true);
   }

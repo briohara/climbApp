@@ -2,7 +2,14 @@ const jwt = require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 const config = require("../../config/config");
 const checkToken = expressJwt({ secret: config.secret.jwt }); //Gives back middleware function
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.googleClientId);
+
 const User = require("../users/userModel");
+const {
+  requestError,
+  requestSuccessful
+} = require("../httpResponses/responses");
 
 //Check incoming request token
 exports.decodeToken = () => {
@@ -26,7 +33,7 @@ exports.getUser = () => {
       }
 
       if (!user) {
-        res.status(401).send("Unauthorized.");
+        requestError(res, 401, "Unauthorized", "Unauthorized");
       } else {
         req.user = user;
         next();
@@ -35,33 +42,64 @@ exports.getUser = () => {
   };
 };
 
-exports.verifyUser = function() {
+exports.verifyUser = () => {
   return function(req, res, next) {
     let { username, password } = req.body;
 
     //if no username/password stop.
     if (!username || !password) {
-      return res.status(400).send("Username and password requried.");
+      requestError(
+        res,
+        400,
+        "Username and password requried.",
+        "Username and password requried."
+      );
     }
 
     //look up user
-    User.findOne({ username }).exec((err, user) => {
-      if (err) {
-        next(err);
-      }
+    User.findOne({ username: username, isGoogleAccount: false }).exec(
+      (err, user) => {
+        if (err) {
+          next(err);
+        }
 
-      console.log(user);
-
-      if (!user) {
-        res.status(401).send("No user exists with the given username");
-      } else {
-        if (!user.authenticate(password)) {
-          res.status(401).send("Password is incorrect.");
+        if (!user) {
+          requestError(
+            res,
+            401,
+            "No user exists with the given username",
+            "No user exists with the given username"
+          );
         } else {
-          req.user = user;
-          next();
+          if (!user.authenticate(password)) {
+            requestError(
+              res,
+              401,
+              "Password is incorrect.",
+              "Password is incorrect."
+            );
+          } else {
+            req.user = user;
+            next();
+          }
         }
       }
+    );
+  };
+};
+
+exports.verifyGoogleUser = () => {
+  return async function(req, res, next) {
+    const ticket = await client.verifyIdToken({
+      idToken: req.body.uc.id_token,
+      audience: process.env.googleClientId
+    });
+    const payload = ticket.getPayload();
+
+    requestSuccessful(res, 200, {
+      googleUserId: payload["sub"],
+      name: payload["name"],
+      email: payload["email"]
     });
   };
 };

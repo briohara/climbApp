@@ -5,7 +5,9 @@ const userController = require("./userController");
 
 router
   .route("/")
-  .get(userController.getUser)
+  //.get(userController.getUser)
   .post(userController.createUser);
+
+router.post("/googleUserSignin", userController.googleUserSignIn);
 
 module.exports = router;
