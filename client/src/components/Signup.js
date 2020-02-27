@@ -37,25 +37,31 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Signup = () => {
+const Signup = (props) => {
   const [values, setValues] = useState({
-    username: "",
+    email: "",
     password: "",
     showPassword: false,
-    email: ""
+    name: "",
   });
 
   const handleSubmit = e => {
     e.preventDefault();
 
     createUser({
-      username: values.username,
-      password: values.password,
       email: values.email,
-      isGoogleAccount: false
+      password: values.password,
+      name: values.name,
+      isGoogleAccount: false,
+      googleId: "",
     })
-      .then(navigate("login"))
-      .catch(alert("Username/Password is invalid."));
+      .then(res => {
+        localStorage.setItem("JWT", res.token);
+        localStorage.setItem("name", res.name);
+        props.setLoggedIn(true);
+        history.push("dashboard");
+      })
+      .catch(alert("Email/Password is invalid."));
   };
 
   const handleChange = prop => event => {
@@ -83,16 +89,17 @@ const Signup = () => {
           Sign Up!
         </Typography>
         <form className={classes.form} noValidate onSubmit={handleSubmit}>
-          <TextField
+        <TextField
             variant="outlined"
             margin="normal"
             required
             fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            value={values.username}
-            onChange={handleChange("username")}
+            name="email"
+            label="Email"
+            id="email"
+            type="email"
+            value={values.email}
+            onChange={handleChange("email")}
             autoFocus
           />
           <TextField
@@ -125,12 +132,12 @@ const Signup = () => {
             margin="normal"
             required
             fullWidth
-            name="email"
-            label="Email"
-            id="email"
-            type="email"
-            value={values.email}
-            onChange={handleChange("email")}
+            name="name"
+            label="Name"
+            id="name"
+            type="name"
+            value={values.name}
+            onChange={handleChange("name")}
           />
           <Button
             type="submit"

@@ -4,7 +4,7 @@ import RoutesTable from "./RoutesTable";
 import * as api from "../api/api";
 
 const UserRoutes = () => {
-  const RoutesDataTableTitle = `${localStorage.getItem("username")}'s Routes`;
+  const RoutesDataTableTitle = `${localStorage.getItem("name")}'s Routes`;
   const RoutesDataColumns = [
     { title: "Name", field: "name", type: "string" },
     {

@@ -25,48 +25,34 @@ exports.createUser = function(req, res, next) {
     }
 
     let token = signToken(newUser._id);
-    return requestSuccessful(res, 200, { token: token });
+    return requestSuccessful(res, 200, { token: token, name: newUser.name });
   });
 };
 
 exports.googleUserSignIn = function(req, res, next) {
-  let user = UserModel.findOne(
+  let existingUser = UserModel.findOne(
     { googleId: req.body.googleUserId, isGoogleAccount: true },
     (err, user) => {
       if (err) {
         return requestError(res, 500, err, "An error has occured.");
       }
-      console.log("Finding user by id...");
-
-      console.log(user);
-
+  
       if (!user || user.length === 0) {
-        return false;
+
+        let newUser = new UserModel({
+          email: req.body.email,
+          password: "",
+          name: req.body.name,
+          isGoogleAccount: true,
+          googleId: req.body.googleUserId
+        });
+        
+        return requestSuccessful(res, 200, {newUser: newUser});
       }
 
-      return user;
+      console.log
+      let token = signToken(user._id);
+      return requestSuccessful(res, 200, { token: token, name: user.name });
     }
-  );
-
-  if (user) {
-    return requestSuccessful(res, 200, user);
-  } else {
-    //Create new user
-    let newUser = new UserModel({
-      username: req.body.name,
-      password: "",
-      email: req.body.email,
-      isGoogleAccount: true,
-      googleId: req.body.googleUserId
-    });
-
-    newUser.save((err, savedUser) => {
-      if (err) {
-        return requestError(res, 500, err, "An error has occured.");
-      }
-
-      let token = signToken(newUser._id);
-      return requestSuccessful(res, 200, { token: token });
-    });
-  }
+  ); 
 };

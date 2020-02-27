@@ -29,7 +29,7 @@ exports.getUser = () => {
   return function(req, res, next) {
     User.findById(req.user._id).exec((err, user) => {
       if (err) {
-        next(err);
+        return requestError(res, 500, err, "An error has occured.");
       }
 
       if (!user) {
@@ -44,31 +44,31 @@ exports.getUser = () => {
 
 exports.verifyUser = () => {
   return function(req, res, next) {
-    let { username, password } = req.body;
+    let { email, password } = req.body;
 
     //if no username/password stop.
-    if (!username || !password) {
+    if (!email || !password) {
       requestError(
         res,
         400,
-        "Username and password requried.",
-        "Username and password requried."
+        "Email and password requried.",
+        "Email and password requried."
       );
     }
 
     //look up user
-    User.findOne({ username: username, isGoogleAccount: false }).exec(
+    User.findOne({ email: email, isGoogleAccount: false }).exec(
       (err, user) => {
         if (err) {
-          next(err);
+          return requestError(res, 500, err, "An error has occured.");
         }
 
-        if (!user) {
+        if (!user || user.length === 0) {
           requestError(
             res,
             401,
-            "No user exists with the given username",
-            "No user exists with the given username"
+            "No user exists with the given email",
+            "No user exists with the given email"
           );
         } else {
           if (!user.authenticate(password)) {

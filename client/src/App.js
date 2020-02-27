@@ -30,7 +30,7 @@ const App = () => {
     } else {
       setLoggedIn(false);
     }
-  }, [signedOut, loggedIn]);
+  }, [signedOut, loggedIn]); //
 
   return (
     <Router>
@@ -78,7 +78,7 @@ const App = () => {
           </Route>
 
           <Route path="/signup">
-            <SignUp />
+            <SignUp setLoggedIn={setLoggedIn} />
           </Route>
 
           <Route path="/dashboard">

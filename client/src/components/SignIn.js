@@ -45,9 +45,10 @@ const SignIn = props => {
   const history = useHistory();
 
   const [values, setValues] = useState({
-    username: "",
+    email: "",
     password: "",
-    showPassword: false
+    showPassword: false,
+    name: "",
   });
 
   if (
@@ -62,12 +63,12 @@ const SignIn = props => {
 
     api
       .signIn({
-        username: values.username,
-        password: values.password
+        email: values.email,
+        password: values.password,
       })
       .then(res => {
-        localStorage.setItem("JWT", res.token);
-        localStorage.setItem("username", values.username);
+        localStorage.setItem("JWT", res.data.token);
+        localStorage.setItem("name", res.data.name);
         props.setLoggedIn(true);
         history.push("dashboard");
       })
@@ -76,14 +77,29 @@ const SignIn = props => {
 
   const onGoogleLoginSuccess = googleUser => {
     //Grab id token
-    const id_token = googleUser.getAuthResponse().id_token;
+    //const id_token = googleUser.getAuthResponse().id_token;
 
-    //Send Id token to backend
+    //verify with backend
     api
       .verifyGoogleUser(googleUser)
       .then(res => {
-        console.log(res.data);
-        api.googleUserSignIn(res.data);
+        api.googleUserSignIn(res.data)
+        .then(res => {
+          if(res.data.newUser) {
+            api.createUser(res.data.newUser)
+              .then(res => {
+                localStorage.setItem("JWT", res.data.token);
+                localStorage.setItem("name", res.data.name);
+                //props.setLoggedIn(true);
+                history.push("dashboard");
+              });
+          }
+
+          localStorage.setItem("JWT", res.data.token);
+          localStorage.setItem("name", res.data.name);
+          //props.setLoggedIn(true);
+          history.push("dashboard");
+        })
       })
       .catch(err => console.log(err));
   };
@@ -118,11 +134,11 @@ const SignIn = props => {
             margin="normal"
             required
             fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            value={values.username}
-            onChange={handleChange("username")}
+            id="email"
+            label="Email"
+            name="email"
+            value={values.email}
+            onChange={handleChange("email")}
             autoFocus
           />
           <TextField
